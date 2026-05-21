@@ -2,36 +2,32 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>漢検4級チャレンジ！ - まなびやつばめ</title>
+    <title>漢検4級チャレンジ - まなびやつばめ</title>
     <style>
         :root { --main: #FFD93D; --bg: #EBF2FF; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        body { font-family: sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { width: 90%; max-width: 500px; background: white; border-radius: 40px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
         .logo { width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; border: 4px solid var(--main); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
         button { padding: 15px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; background: var(--main); }
-        button:hover { filter: brightness(1.1); }
         #quiz-area { display: none; }
         .question { font-size: 24px; font-weight: bold; margin: 20px 0; min-height: 60px; }
-        #feedback { font-size: 60px; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); display: none; }
+        #feedback { font-size: 60px; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); display: none; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div id="start-screen">
-        <a href="https://manabiya-tsubame.com/" target="_blank">
-            <img src="rogo.png" class="logo" alt="ロゴ">
-        </a>
+        <a href="https://manabiya-tsubame.com/" target="_blank"><img src="rogo.png" class="logo" alt="ロゴ"></a>
         <h1>漢検4級チャレンジ</h1>
         <div class="grid">
-            <button onclick="start(1)">① 漢字の読み</button>
-            <button onclick="start(2)">② 漢字の書取</button>
-            <button onclick="start(3)">③ 四字熟語読み</button>
-            <button onclick="start(4)">④ 四字熟語書取</button>
-            <button onclick="start(5)">⑤ 対義・類義語</button>
-            <button onclick="start(6)">⑥ 部首・部首名</button>
+            <button onclick="start('kanji')">① 漢字の読み</button>
+            <button onclick="start('kanji')">② 漢字の書取</button>
+            <button onclick="start('yoji')">③ 四字熟語読み</button>
+            <button onclick="start('yoji')">④ 四字熟語書取</button>
+            <button onclick="start('yoji')">⑤ 対義・類義語</button>
+            <button onclick="start('yoji')">⑥ 部首・部首名</button>
         </div>
     </div>
 
@@ -46,52 +42,58 @@
 <script>
     let db = { kanji: [], yoji: [] };
 
-    // データ読み込みを確実に実行
     async function loadAll() {
-        try {
-            const kRes = await fetch('kanken4kyu_kanji.csv');
-            const kText = await kRes.text();
-            db.kanji = kText.split('\n').slice(1).filter(l => l.includes(',')).map(l => {
-                const cols = l.split(',');
-                return { q: cols[0], a: cols[1] };
-            });
+        const kRes = await fetch('kanken4kyu_kanji.csv');
+        const kText = await kRes.text();
+        db.kanji = kText.split('\n').slice(1).filter(l => l.includes(',')).map(l => {
+            const cols = l.split(',');
+            return { q: cols[0], a: cols[1] };
+        });
 
-            const yRes = await fetch('kanken4kyu_yojijukugo.csv');
-            const yText = await yRes.text();
-            db.yoji = yText.split('\n').slice(1).filter(l => l.includes(',')).map(l => {
-                const cols = l.split(',');
-                return { q: cols[0], a: cols[1] };
-            });
-            console.log("読み込み完了");
-        } catch(e) { alert("CSVファイルが見つかりません。"); }
+        const yRes = await fetch('kanken4kyu_yojijukugo.csv');
+        const yText = await yRes.text();
+        db.yoji = yText.split('\n').slice(1).filter(l => l.includes(',')).map(l => {
+            const cols = l.split(',');
+            return { q: cols[0], a: cols[1] };
+        });
     }
 
-    function start(cat) {
-        if(db.kanji.length === 0) { alert("データ準備中..."); return; }
+    function start(type) {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('quiz-area').style.display = 'block';
-        nextQ();
+        nextQ(type);
     }
 
-    function nextQ() {
-        const q = db.kanji[Math.floor(Math.random() * db.kanji.length)];
-        document.getElementById('q-text').innerText = q.q + " の読みは？";
+    function nextQ(type) {
+        let pool = db[type];
+        // 正解を選ぶ
+        const correct = pool[Math.floor(Math.random() * pool.length)];
+        
+        // 誤答を3つ、プール全体から重複なしで抽出
+        let options = [correct.a];
+        while(options.length < 4) {
+            let rnd = pool[Math.floor(Math.random() * pool.length)].a;
+            if(!options.includes(rnd)) options.push(rnd);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        document.getElementById('q-text').innerText = correct.q;
         const c = document.getElementById('choices');
         c.innerHTML = '';
-        [q.a, 'ひっかけ1', 'ひっかけ2', 'ひっかけ3'].sort(() => Math.random() - 0.5).forEach(txt => {
+        options.forEach(txt => {
             const b = document.createElement('button');
             b.innerText = txt;
-            b.onclick = () => showFeedback(txt === q.a);
+            b.onclick = () => showFeedback(txt === correct.a, type);
             c.appendChild(b);
         });
     }
 
-    function showFeedback(isCorrect) {
+    function showFeedback(isCorrect, type) {
         const f = document.getElementById('feedback');
         f.innerText = isCorrect ? "〇" : "×";
         f.style.color = isCorrect ? "#FF6B6B" : "#4A90E2";
         f.style.display = 'block';
-        setTimeout(() => { f.style.display = 'none'; nextQ(); }, 800);
+        setTimeout(() => { f.style.display = 'none'; nextQ(type); }, 800);
     }
 
     loadAll();
