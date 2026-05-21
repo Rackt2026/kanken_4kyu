@@ -2,34 +2,49 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>漢検4級対策 - まなびやつばめ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
     <style>
         :root { --bg-color: #EBF2FF; --btn-green: #4fbe79; --btn-purple: #7c5cc4; --navy-dark: #2c3e50; }
-        body { margin: 0; padding: 20px; font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; }
-        .app-card { width: 100%; max-width: 540px; background: white; border-radius: 30px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
-        .btn-large { width: 100%; padding: 16px; margin: 8px 0; border: none; border-radius: 14px; color: white; font-weight: bold; cursor: pointer; }
+        body { margin: 0; padding: 20px; font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app-card { width: 100%; max-width: 500px; background: white; border-radius: 30px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
+        
+        /* メニューボタン */
+        .btn-large { width: 100%; padding: 18px; margin: 8px 0; border: none; border-radius: 15px; color: white; font-weight: bold; cursor: pointer; font-size: 18px; }
         .btn-green { background: var(--btn-green); }
         .btn-purple { background: var(--btn-purple); }
+        
+        /* クイズ画面用レイアウト */
+        #view-quiz { display: flex; flex-direction: column; gap: 20px; }
+        .status-bar { display: flex; justify-content: space-between; font-weight: bold; color: var(--navy-dark); margin-bottom: 10px; }
+        .question-box { font-size: 28px; font-weight: bold; padding: 40px 10px; background: #f8f9fa; border-radius: 20px; border: 2px dashed #ddd; }
+        
+        /* 4択グリッド */
+        .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .choice-btn { padding: 20px 10px; border: 2px solid #eef2f6; border-radius: 15px; cursor: pointer; background: white; font-size: 18px; font-weight: bold; transition: 0.2s; }
+        .choice-btn:hover { background: #f0f7ff; border-color: #cbd5e0; }
+        
         .hidden { display: none !important; }
-        .question-box { font-size: 32px; font-weight: bold; margin: 30px 0; }
-        .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .choice-btn { padding: 20px; border: 2px solid #ddd; border-radius: 15px; cursor: pointer; background: white; }
     </style>
 </head>
 <body>
 
 <div class="app-card" id="app">
     <div id="view-start">
-        <h1>漢検4級対策</h1>
-        <button class="btn-large btn-green" onclick="initQuiz('kanji_read')">① 漢字の読み</button>
-        <button class="btn-large btn-purple" onclick="initQuiz('kanji_write')">② 漢字の書取</button>
-        <button class="btn-large btn-green" onclick="initQuiz('yoji_read')">③ 四字熟語の読み</button>
-        <button class="btn-large btn-purple" onclick="initQuiz('yoji_write')">④ 四字熟語の書取</button>
+        <h1 style="font-family: 'M PLUS Rounded 1c';">漢検4級対策</h1>
+        <button class="btn-large btn-green" onclick="startQuiz('kanji_read')">① 漢字の読み</button>
+        <button class="btn-large btn-purple" onclick="startQuiz('kanji_write')">② 漢字の書取</button>
+        <button class="btn-large btn-green" onclick="startQuiz('yoji_read')">③ 四字熟語の読み</button>
+        <button class="btn-large btn-purple" onclick="startQuiz('yoji_write')">④ 四字熟語の書取</button>
     </div>
 
     <div id="view-quiz" class="hidden">
-        <div id="progress">1 / 20</div>
-        <div class="question-box" id="question-text"></div>
+        <div class="status-bar">
+            <span id="progress">1 / 20</span>
+            <span>正解: <span id="score">0</span></span>
+        </div>
+        <div class="question-box" id="question-text">読み込み中...</div>
         <div class="choices-grid" id="choices"></div>
     </div>
 </div>
@@ -39,24 +54,22 @@
     let currentPool = [];
     let qIdx = 0, score = 0;
 
-    // CSV読み込み
-    async function loadAll() {
+    async function loadData() {
         const kRes = await fetch('kanken4kyu_kanji.csv');
         db.kanji = (await kRes.text()).split('\n').slice(1).filter(l=>l).map(l => {
-            const [q, a1, a2] = l.split(',');
-            return { q, a: a1, d: [a2, "読み方A", "読み方B", "読み方C"] };
+            const [q, a, _] = l.split(',');
+            return { q: q + " の読みは？", a: a };
         });
         const yRes = await fetch('kanken4kyu_yojijukugo.csv');
         db.yoji = (await yRes.text()).split('\n').slice(1).filter(l=>l).map(l => {
             const [q, r, m, t] = l.split(',');
-            return { q, a: r, d: [m, "熟語A", "熟語B", "熟語C"] };
+            return { q: q + " の読みは？", a: r };
         });
-        console.log("データ読み込み完了:", db);
     }
 
-    function initQuiz(type) {
-        let pool = type.includes('kanji') ? db.kanji : db.yoji;
-        currentPool = pool.sort(() => Math.random() - 0.5).slice(0, 20);
+    function startQuiz(type) {
+        let allItems = type.includes('kanji') ? db.kanji : db.yoji;
+        currentPool = allItems.sort(() => Math.random() - 0.5).slice(0, 20);
         qIdx = 0; score = 0;
         document.getElementById('view-start').classList.add('hidden');
         document.getElementById('view-quiz').classList.remove('hidden');
@@ -69,16 +82,30 @@
         document.getElementById('progress').innerText = `${qIdx + 1} / 20`;
         const container = document.getElementById('choices');
         container.innerHTML = '';
-        [q.a, ...q.d.slice(0,3)].sort(() => Math.random() - 0.5).forEach(text => {
+        
+        // 4択生成（正解 + 他のデータからランダムな3つ）
+        let choices = [q.a];
+        while(choices.length < 4) {
+            let rnd = currentPool[Math.floor(Math.random() * currentPool.length)].a;
+            if(!choices.includes(rnd)) choices.push(rnd);
+        }
+        choices.sort(() => Math.random() - 0.5);
+
+        choices.forEach(text => {
             const btn = document.createElement('button');
             btn.className = 'choice-btn';
             btn.innerText = text;
-            btn.onclick = () => { qIdx++; qIdx < 20 ? showQuestion() : alert('終了！スコア:' + score); };
+            btn.onclick = () => {
+                if(text === q.a) score++;
+                qIdx++;
+                if(qIdx < 20) showQuestion();
+                else alert('終了！スコア: ' + score + '/20');
+            };
             container.appendChild(btn);
         });
     }
 
-    loadAll();
+    loadData();
 </script>
 </body>
 </html>
