@@ -3,65 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>漢検4級 学習アプリ</title>
+    <title>漢検4級対策問題 - まなびやつばめ</title>
     <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; margin: 20px; background-color: #f8f9fa; color: #333; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h1 { color: #d32f2f; text-align: center; }
-        h2 { border-left: 5px solid #d32f2f; padding-left: 10px; margin-top: 40px; color: #d32f2f; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #f2f2f2; }
-        tr:nth-child(even) { background-color: #fafafa; }
+        /* ※前述のCSSをそのままお使いください */
+        :root { --bg-color: #EBF2FF; --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); --btn-green: #4fbe79; --btn-green-shadow: #3e9e63; --btn-purple: #7c5cc4; --btn-purple-shadow: #6347a3; --navy-dark: #2c3e50; --status-bg: #272f3d; --text-main: #2c3e50; --choice-border: #eef2f6; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 20px; font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg-color); min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .app-card { width: 100%; max-width: 540px; min-height: 600px; background: #ffffff; border-radius: 30px; box-shadow: var(--card-shadow); padding: 30px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        .logo-box { margin-bottom: 25px; text-align: center; }
+        .logo-box img { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; }
+        .title-main { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 28px; color: var(--navy-dark); margin: 0 0 5px 0; text-align: center; }
+        .subtitle { font-size: 24px; color: var(--navy-dark); margin: 0 0 10px 0; font-weight: bold; text-align: center; }
+        .info-text { color: #7f8c8d; font-size: 15px; margin: 0 0 25px 0; text-align: center; }
+        .menu-list { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+        .btn-large { width: 100%; padding: 16px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s; text-align: center; }
+        .btn-green { background: var(--btn-green); box-shadow: 0 4px 0 var(--btn-green-shadow); }
+        .btn-purple { background: var(--btn-purple); box-shadow: 0 4px 0 var(--btn-purple-shadow); }
+        .btn-large:active { transform: translateY(3px); }
+        .status-bar { width: 100%; background: var(--status-bg); color: white; border-radius: 14px; padding: 12px; display: flex; justify-content: space-around; font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+        .correct-count { color: #ffffff; } .miss-count { color: #ff9f9f; }
+        .progress-text { font-size: 15px; color: #99aab5; margin-bottom: 20px; font-weight: bold; }
+        .question-box { font-size: 38px; font-weight: bold; color: #1c2d42; margin: 30px 0; text-align: center; width: 100%; word-break: break-all; line-height: 1.4; }
+        .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: auto; }
+        .choice-btn { background: white; border: 2px solid var(--choice-border); border-radius: 16px; padding: 22px 10px; font-size: 20px; font-weight: bold; color: #34495e; cursor: pointer; transition: all 0.15s; box-shadow: 0 4px 0 var(--choice-border); text-align: center; }
+        .choice-btn.correct-ans { background: #d4edda !important; border-color: #28a745 !important; color: #155724 !important; box-shadow: 0 4px 0 #1e7e34 !important; }
+        .choice-btn.incorrect-ans { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24 !important; box-shadow: 0 4px 0 #bd2130 !important; }
+        .hidden { display: none !important; }
+        .result-score { font-size: 56px; font-weight: bold; color: var(--btn-purple); margin: 20px 0; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>漢検4級 学習リスト</h1>
-
-    <div id="kanji-section">
-        <h2>漢字リスト</h2>
-        <table id="kanji-table">
-            <thead><tr><th>漢字</th><th>音読み</th><th>訓読み</th></tr></thead>
-            <tbody></tbody>
-        </table>
+    <div class="app-card">
+        <div id="view-start" class="view" style="width: 100%;">
+            <div class="logo-box"><img src="rogo.png" alt="まなびやつばめ"></div>
+            <h1 class="title-main">漢検4級対策</h1>
+            <p class="subtitle">20問チャレンジ！</p>
+            <div class="menu-list">
+                <button class="btn-large btn-green" onclick="loadAndStart('kanken4kyu_kanji.csv', '読み')">① 漢字の読み</button>
+                <button class="btn-large btn-purple" onclick="loadAndStart('kanken4kyu_kanji.csv', '書取')">② 漢字の書取</button>
+                <button class="btn-large btn-green" onclick="loadAndStart('kanken4kyu_yojijukugo.csv', '四字熟語')">③ 四字熟語の読み</button>
+            </div>
+        </div>
+        <div id="view-quiz" class="view hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center; height: 100%;">
+            <div class="status-bar">
+                <div>正解：<span id="score-correct" class="correct-count">0</span></div>
+                <div>ミス：<span id="score-miss" class="miss-count">0</span></div>
+            </div>
+            <div class="progress-text"><span id="current-idx">1</span> / 20</div>
+            <div class="question-box" id="question-text">読み込み中...</div>
+            <div class="choices-grid">
+                <button class="choice-btn" id="choice-0" onclick="checkAnswer(0)"></button>
+                <button class="choice-btn" id="choice-1" onclick="checkAnswer(1)"></button>
+                <button class="choice-btn" id="choice-2" onclick="checkAnswer(2)"></button>
+                <button class="choice-btn" id="choice-3" onclick="checkAnswer(3)"></button>
+            </div>
+        </div>
+        <div id="view-result" class="view hidden" style="text-align: center; width: 100%;">
+            <h1 class="title-main">おつかれさまでした！</h1>
+            <div class="result-score"><span id="final-score">0</span> / 20</div>
+            <p class="info-text" id="result-comment">よくがんばったね！</p>
+            <button class="btn-large btn-green" onclick="backToMenu()">トップにもどる</button>
+        </div>
     </div>
 
-    <div id="yoji-section">
-        <h2>四字熟語リスト</h2>
-        <table id="yoji-table">
-            <thead><tr><th>四字熟語</th><th>よみがな</th><th>意味説明</th><th>構成</th></tr></thead>
-            <tbody></tbody>
-        </table>
-    </div>
-</div>
+    <script>
+        let currentCategoryQuestions = [];
+        let questionIdx = 0, correctCount = 0, missCount = 0, canAnswer = true;
 
-<script>
-    // CSVを読み込んでテーブルに挿入する関数
-    async function loadCSV(url, tableId) {
-        const response = await fetch(url);
-        const data = await response.text();
-        const rows = data.split('\n').slice(1); // ヘッダーを除外
-        const tbody = document.querySelector(`#${tableId} tbody`);
-        
-        rows.forEach(row => {
-            if(row.trim() === "") return;
-            const cols = row.split(',');
-            const tr = document.createElement('tr');
-            cols.forEach(col => {
-                const td = document.createElement('td');
-                td.textContent = col.replace(/"/g, ''); // 簡易的なクォート除去
-                tr.appendChild(td);
+        // CSVを読み込んでデータを整形する関数
+        async function loadAndStart(fileName, category) {
+            const response = await fetch(fileName);
+            const csvText = await response.text();
+            const lines = csvText.split('\n').slice(1); // ヘッダーを飛ばす
+            
+            currentCategoryQuestions = lines.map(line => {
+                const [cat, q, a, d1, d2, d3] = line.split(',');
+                return { q, a, d: [d1, d2, d3].filter(Boolean) };
+            }).filter(item => item.q);
+
+            // クイズ開始処理
+            questionIdx = 0; correctCount = 0; missCount = 0;
+            currentCategoryQuestions = currentCategoryQuestions.sort(() => Math.random() - 0.5).slice(0, 20);
+            
+            document.getElementById('view-start').classList.add('hidden');
+            document.getElementById('view-quiz').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            canAnswer = true;
+            const q = currentCategoryQuestions[questionIdx];
+            document.getElementById('question-text').innerText = q.q;
+            document.getElementById('current-idx').innerText = questionIdx + 1;
+            let choices = [q.a, ...q.d].sort(() => Math.random() - 0.5);
+            currentCategoryQuestions[questionIdx].shuffled = choices;
+            choices.forEach((c, i) => {
+                const btn = document.getElementById(`choice-${i}`);
+                btn.innerText = c; btn.className = 'choice-btn';
             });
-            tbody.appendChild(tr);
-        });
-    }
+        }
 
-    // CSVファイルの読み込み実行
-    loadCSV('kanken4kyu_kanji.csv', 'kanji-table');
-    loadCSV('kanken4kyu_yojijukugo.csv', 'yoji-table');
-</script>
+        function checkAnswer(selectedIdx) {
+            if (!canAnswer) return;
+            canAnswer = false;
+            const q = currentCategoryQuestions[questionIdx];
+            const isCorrect = (q.shuffled[selectedIdx] === q.a);
+            document.getElementById(`choice-${selectedIdx}`).classList.add(isCorrect ? 'correct-ans' : 'incorrect-ans');
+            if(isCorrect) correctCount++; else missCount++;
+            
+            setTimeout(() => {
+                if (++questionIdx < 20) renderQuestion(); else showResult();
+            }, 1000);
+        }
 
+        function showResult() {
+            document.getElementById('view-quiz').classList.add('hidden');
+            document.getElementById('view-result').classList.remove('hidden');
+            document.getElementById('final-score').innerText = correctCount;
+        }
+
+        function backToMenu() {
+            document.getElementById('view-result').classList.add('hidden');
+            document.getElementById('view-start').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
