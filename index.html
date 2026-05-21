@@ -3,129 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>漢検4級対策問題 - まなびやつばめ</title>
+    <title>漢検4級対策 - まなびやつばめ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* ※前述のCSSをそのままお使いください */
-        :root { --bg-color: #EBF2FF; --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); --btn-green: #4fbe79; --btn-green-shadow: #3e9e63; --btn-purple: #7c5cc4; --btn-purple-shadow: #6347a3; --navy-dark: #2c3e50; --status-bg: #272f3d; --text-main: #2c3e50; --choice-border: #eef2f6; }
-        * { box-sizing: border-box; }
-        body { margin: 0; padding: 20px; font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg-color); min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .app-card { width: 100%; max-width: 540px; min-height: 600px; background: #ffffff; border-radius: 30px; box-shadow: var(--card-shadow); padding: 30px; display: flex; flex-direction: column; align-items: center; position: relative; }
-        .logo-box { margin-bottom: 25px; text-align: center; }
-        .logo-box img { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; }
-        .title-main { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 28px; color: var(--navy-dark); margin: 0 0 5px 0; text-align: center; }
-        .subtitle { font-size: 24px; color: var(--navy-dark); margin: 0 0 10px 0; font-weight: bold; text-align: center; }
-        .info-text { color: #7f8c8d; font-size: 15px; margin: 0 0 25px 0; text-align: center; }
-        .menu-list { width: 100%; display: flex; flex-direction: column; gap: 12px; }
-        .btn-large { width: 100%; padding: 16px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 14px; cursor: pointer; transition: transform 0.1s; text-align: center; }
-        .btn-green { background: var(--btn-green); box-shadow: 0 4px 0 var(--btn-green-shadow); }
-        .btn-purple { background: var(--btn-purple); box-shadow: 0 4px 0 var(--btn-purple-shadow); }
-        .btn-large:active { transform: translateY(3px); }
-        .status-bar { width: 100%; background: var(--status-bg); color: white; border-radius: 14px; padding: 12px; display: flex; justify-content: space-around; font-size: 18px; font-weight: bold; margin-bottom: 15px; }
-        .correct-count { color: #ffffff; } .miss-count { color: #ff9f9f; }
-        .progress-text { font-size: 15px; color: #99aab5; margin-bottom: 20px; font-weight: bold; }
-        .question-box { font-size: 38px; font-weight: bold; color: #1c2d42; margin: 30px 0; text-align: center; width: 100%; word-break: break-all; line-height: 1.4; }
-        .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: auto; }
-        .choice-btn { background: white; border: 2px solid var(--choice-border); border-radius: 16px; padding: 22px 10px; font-size: 20px; font-weight: bold; color: #34495e; cursor: pointer; transition: all 0.15s; box-shadow: 0 4px 0 var(--choice-border); text-align: center; }
-        .choice-btn.correct-ans { background: #d4edda !important; border-color: #28a745 !important; color: #155724 !important; box-shadow: 0 4px 0 #1e7e34 !important; }
-        .choice-btn.incorrect-ans { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24 !important; box-shadow: 0 4px 0 #bd2130 !important; }
-        .hidden { display: none !important; }
-        .result-score { font-size: 56px; font-weight: bold; color: var(--btn-purple); margin: 20px 0; }
+        :root { --bg-color: #EBF2FF; --btn-green: #4fbe79; --btn-purple: #7c5cc4; --navy-dark: #2c3e50; }
+        body { margin: 0; padding: 20px; font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; }
+        .app-card { width: 100%; max-width: 540px; background: white; border-radius: 30px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .btn-large { width: 100%; padding: 15px; margin-bottom: 10px; border: none; border-radius: 14px; color: white; font-weight: bold; cursor: pointer; }
+        .btn-green { background: var(--btn-green); }
+        .btn-purple { background: var(--btn-purple); }
+        .hidden { display: none; }
+        .question-box { font-size: 24px; font-weight: bold; margin: 20px 0; text-align: center; }
+        .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .choice-btn { padding: 20px; border: 2px solid #ddd; border-radius: 15px; cursor: pointer; background: white; }
     </style>
 </head>
 <body>
-    <div class="app-card">
-        <div id="view-start" class="view" style="width: 100%;">
-            <div class="logo-box"><img src="rogo.png" alt="まなびやつばめ"></div>
-            <h1 class="title-main">漢検4級対策</h1>
-            <p class="subtitle">20問チャレンジ！</p>
-            <div class="menu-list">
-                <button class="btn-large btn-green" onclick="loadAndStart('kanken4kyu_kanji.csv', '読み')">① 漢字の読み</button>
-                <button class="btn-large btn-purple" onclick="loadAndStart('kanken4kyu_kanji.csv', '書取')">② 漢字の書取</button>
-                <button class="btn-large btn-green" onclick="loadAndStart('kanken4kyu_yojijukugo.csv', '四字熟語')">③ 四字熟語の読み</button>
-            </div>
-        </div>
-        <div id="view-quiz" class="view hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center; height: 100%;">
-            <div class="status-bar">
-                <div>正解：<span id="score-correct" class="correct-count">0</span></div>
-                <div>ミス：<span id="score-miss" class="miss-count">0</span></div>
-            </div>
-            <div class="progress-text"><span id="current-idx">1</span> / 20</div>
-            <div class="question-box" id="question-text">読み込み中...</div>
-            <div class="choices-grid">
-                <button class="choice-btn" id="choice-0" onclick="checkAnswer(0)"></button>
-                <button class="choice-btn" id="choice-1" onclick="checkAnswer(1)"></button>
-                <button class="choice-btn" id="choice-2" onclick="checkAnswer(2)"></button>
-                <button class="choice-btn" id="choice-3" onclick="checkAnswer(3)"></button>
-            </div>
-        </div>
-        <div id="view-result" class="view hidden" style="text-align: center; width: 100%;">
-            <h1 class="title-main">おつかれさまでした！</h1>
-            <div class="result-score"><span id="final-score">0</span> / 20</div>
-            <p class="info-text" id="result-comment">よくがんばったね！</p>
-            <button class="btn-large btn-green" onclick="backToMenu()">トップにもどる</button>
+
+<div class="app-card">
+    <div id="view-start">
+        <h1>漢検4級対策</h1>
+        <div class="menu-list">
+            <button class="btn-large btn-green" onclick="startQuiz('kanji_read')">① 漢字の読み</button>
+            <button class="btn-large btn-purple" onclick="startQuiz('kanji_write')">② 漢字の書取</button>
+            <button class="btn-large btn-green" onclick="startQuiz('yoji_read')">③ 四字熟語の読み</button>
+            <button class="btn-large btn-purple" onclick="startQuiz('yoji_write')">④ 四字熟語の書取</button>
         </div>
     </div>
 
-    <script>
-        let currentCategoryQuestions = [];
-        let questionIdx = 0, correctCount = 0, missCount = 0, canAnswer = true;
+    <div id="view-quiz" class="hidden">
+        <div id="progress">1 / 20</div>
+        <div class="question-box" id="question-text"></div>
+        <div class="choices-grid" id="choices"></div>
+    </div>
+</div>
 
-        // CSVを読み込んでデータを整形する関数
-        async function loadAndStart(fileName, category) {
-            const response = await fetch(fileName);
-            const csvText = await response.text();
-            const lines = csvText.split('\n').slice(1); // ヘッダーを飛ばす
-            
-            currentCategoryQuestions = lines.map(line => {
-                const [cat, q, a, d1, d2, d3] = line.split(',');
-                return { q, a, d: [d1, d2, d3].filter(Boolean) };
-            }).filter(item => item.q);
+<script>
+    let rawData = { kanji: [], yoji: [] };
+    let quizData = [];
+    let currentIdx = 0;
 
-            // クイズ開始処理
-            questionIdx = 0; correctCount = 0; missCount = 0;
-            currentCategoryQuestions = currentCategoryQuestions.sort(() => Math.random() - 0.5).slice(0, 20);
-            
-            document.getElementById('view-start').classList.add('hidden');
-            document.getElementById('view-quiz').classList.remove('hidden');
-            renderQuestion();
-        }
+    // データ読み込み
+    async function loadData() {
+        const kRes = await fetch('kanken4kyu_kanji.csv');
+        const kText = await kRes.text();
+        rawData.kanji = kText.split('\n').slice(1).map(line => {
+            const [q, a1, a2] = line.split(',');
+            return { q, a1, a2 }; // 漢字, 音読み, 訓読み
+        });
 
-        function renderQuestion() {
-            canAnswer = true;
-            const q = currentCategoryQuestions[questionIdx];
-            document.getElementById('question-text').innerText = q.q;
-            document.getElementById('current-idx').innerText = questionIdx + 1;
-            let choices = [q.a, ...q.d].sort(() => Math.random() - 0.5);
-            currentCategoryQuestions[questionIdx].shuffled = choices;
-            choices.forEach((c, i) => {
-                const btn = document.getElementById(`choice-${i}`);
-                btn.innerText = c; btn.className = 'choice-btn';
-            });
-        }
+        const yRes = await fetch('kanken4kyu_yojijukugo.csv');
+        const yText = await yRes.text();
+        rawData.yoji = yText.split('\n').slice(1).map(line => {
+            const [q, r, m, t] = line.split(',');
+            return { q, r, m, t }; // 四字熟語, 読み, 意味, タイプ
+        });
+    }
 
-        function checkAnswer(selectedIdx) {
-            if (!canAnswer) return;
-            canAnswer = false;
-            const q = currentCategoryQuestions[questionIdx];
-            const isCorrect = (q.shuffled[selectedIdx] === q.a);
-            document.getElementById(`choice-${selectedIdx}`).classList.add(isCorrect ? 'correct-ans' : 'incorrect-ans');
-            if(isCorrect) correctCount++; else missCount++;
-            
-            setTimeout(() => {
-                if (++questionIdx < 20) renderQuestion(); else showResult();
-            }, 1000);
-        }
+    function startQuiz(type) {
+        // ここに各カテゴリー別のロジックを実装
+        // 読み込みデータからランダムに20問抽出
+        document.getElementById('view-start').classList.add('hidden');
+        document.getElementById('view-quiz').classList.remove('hidden');
+        nextQuestion();
+    }
 
-        function showResult() {
-            document.getElementById('view-quiz').classList.add('hidden');
-            document.getElementById('view-result').classList.remove('hidden');
-            document.getElementById('final-score').innerText = correctCount;
-        }
+    function nextQuestion() {
+        // 次の問題表示ロジック
+    }
 
-        function backToMenu() {
-            document.getElementById('view-result').classList.add('hidden');
-            document.getElementById('view-start').classList.remove('hidden');
-        }
-    </script>
+    loadData();
+</script>
 </body>
 </html>
