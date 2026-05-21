@@ -2,88 +2,456 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>漢検4級チャレンジ！</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>漢検4級チャレンジ！ - まなびやつばめ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=M+PLUS+Rounded+1c:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #FFD93D; --accent: #FF6B6B; --bg: #FFF9E6; }
-        body { font-family: 'Arial Rounded MT Bold', sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { width: 90%; max-width: 500px; background: white; border-radius: 40px; padding: 30px; box-shadow: 0 15px 0 #E5C330; text-align: center; }
-        h1 { color: #555; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        button { padding: 15px; border: none; border-radius: 20px; font-size: 16px; cursor: pointer; transition: transform 0.1s; font-weight: bold; }
-        button:active { transform: scale(0.95); }
-        .cat-btn { background: var(--main); border-bottom: 5px solid #C4A728; }
-        .back-btn { background: #bbb; color: white; margin-top: 20px; }
-        #quiz-area { display: none; }
-        .feedback { font-size: 50px; margin: 20px; display: none; }
+        :root {
+            --bg: #EBF2FF;
+            --card: #ffffff;
+            --main-yellow: #FFD93D;
+            --main-purple: #9472e8;
+            --btn-shadow-y: #E5C330;
+            --btn-shadow-p: #7555C2;
+            --correct: #FF6B6B;
+            --wrong: #4A90E2;
+            --text: #2c3e50;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0;
+            padding: 15px;
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-card {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card);
+            border-radius: 35px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            position: relative;
+            min-height: 580px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* ロゴ・タイトル */
+        .logo-area { text-align: center; margin-bottom: 10px; }
+        .logo { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--main-yellow); box-shadow: 0 5px 10px rgba(0,0,0,0.05); }
+        h1 { font-family: 'M PLUS Rounded 1c'; font-weight: 900; color: var(--text); font-size: 26px; margin: 10px 0 5px 0; text-align: center; }
+        .sub-copy { font-size: 14px; color: #7f8c8d; margin: 0 0 20px 0; font-weight: bold; text-align: center; }
+
+        /* グリッドメニュー */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+        
+        .btn {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            padding: 18px 8px;
+            border: none;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .btn-y { background: var(--main-yellow); color: #5a4b00; box-shadow: 0 6px 0 var(--btn-shadow-y); }
+        .btn-p { background: var(--main-purple); box-shadow: 0 6px 0 var(--btn-shadow-p); }
+        
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+        }
+
+        /* クイズ画面 */
+        #quiz-view, #result-view { display: none; flex-direction: column; height: 100%; flex-grow: 1; }
+        .status-bar { display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 12px 20px; border-radius: 18px; font-weight: bold; font-size: 16px; margin-bottom: 15px; }
+        
+        .q-sub { font-size: 14px; color: #7f8c8d; font-weight: bold; margin-bottom: 5px; text-align: left; padding-left: 5px; }
+        .q-box { 
+            background: #f8fafc; 
+            border: 3px dashed #cbd5e1; 
+            border-radius: 24px; 
+            padding: 30px 15px; 
+            margin-bottom: 20px; 
+            font-size: 34px; 
+            font-weight: 700; 
+            color: var(--text);
+            min-height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        /* 4択ボタン */
+        .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; }
+        .choice-btn {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            padding: 18px 10px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text);
+            cursor: pointer;
+            box-shadow: 0 4px 0 #e2e8f0;
+            transition: all 0.1s;
+        }
+        .choice-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+            background: #f8fafc;
+        }
+
+        /* 丸バツアニメーション */
+        #effect-layer {
+            position: absolute;
+            top: 45%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 160px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+        }
+        .ani-pop { animation: popEffect 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popEffect {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            40% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+        }
+
+        .home-btn { background: #94a3b8; color: white; margin-top: 20px; padding: 12px; font-size: 14px; border-radius: 15px; width: 100%; box-shadow: 0 4px 0 #64748b; }
+        .home-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.1); }
+        
+        /* リザルト画面 */
+        .result-score { font-size: 24px; font-weight: bold; margin: 20px 0; color: var(--text); }
+        .result-comment { font-size: 18px; color: var(--main-purple); font-weight: bold; margin-bottom: 30px; font-family: 'M PLUS Rounded 1c'; }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="card" id="app">
-    <div id="start-screen">
-        <h1>漢検4級マスター</h1>
-        <div class="grid">
-            <button class="cat-btn" onclick="start(1)">①漢字の読み</button>
-            <button class="cat-btn" onclick="start(2)">②漢字の書取</button>
-            <button class="cat-btn" onclick="start(3)">③四字熟語読み</button>
-            <button class="cat-btn" onclick="start(4)">④四字熟語書取</button>
-            <button class="cat-btn" onclick="start(5)">⑤対義語・類義語</button>
-            <button class="cat-btn" onclick="start(6)">⑥部首・部首名</button>
+    <div class="app-card">
+        <div id="effect-layer"></div>
+
+        <div id="start-view">
+            <div class="logo-area">
+                <a href="https://manabiya-tsubame.com/" target="_blank">
+                    <img src="rogo.png" class="logo" alt="つばめロゴ" onerror="this.src='https://via.placeholder.com/100?text=つばめ'">
+                </a>
+            </div>
+            <h1>漢検4級チャレンジ</h1>
+            <p class="sub-copy" id="loading-status">データをよみこみ中...</p>
+            
+            <div class="menu-grid">
+                <button class="btn btn-y" onclick="tryStartQuiz(1)">① 漢字の読み</button>
+                <button class="btn btn-p" onclick="tryStartQuiz(2)">② 漢字の書取</button>
+                <button class="btn btn-y" onclick="tryStartQuiz(3)">③ 四字熟語読み</button>
+                <button class="btn btn-p" onclick="tryStartQuiz(4)">④ 四字熟語書取</button>
+                <button class="btn btn-y" onclick="tryStartQuiz(5)">⑤ 対義・類義語</button>
+                <button class="btn btn-p" onclick="tryStartQuiz(6)">⑥ 部首・部首名</button>
+            </div>
+        </div>
+
+        <div id="quiz-view">
+            <div>
+                <div class="status-bar">
+                    <div style="color:var(--correct)">〇 <span id="count-ok">0</span></div>
+                    <div id="progress" style="font-family:'M PLUS Rounded 1c'; font-size:18px;">1 / 20</div>
+                    <div style="color:var(--wrong)">× <span id="count-ng">0</span></div>
+                </div>
+                <div id="q-category-label" class="q-sub">モンダイ</div>
+                <div class="q-box" id="q-text">---</div>
+            </div>
+
+            <div class="choices-grid" id="choices-area"></div>
+            <button class="btn home-btn" onclick="backToHome()">トップにもどる</button>
+        </div>
+
+        <div id="result-view">
+            <h1>テストしゅうりょう！</h1>
+            <div class="result-score">せいかい数: <span id="final-score" style="color:var(--correct); font-size:40px;">0</span> / 20 問</div>
+            <div class="result-comment" id="result-comment">がんばったね！</div>
+            <button class="btn btn-y" style="width:100%; font-size:18px;" onclick="backToHome()">もういちど遊ぶ</button>
         </div>
     </div>
 
-    <div id="quiz-area">
-        <div id="q-text" style="font-size: 24px; margin: 20px 0; min-height: 80px;"></div>
-        <div id="feedback" class="feedback"></div>
-        <div class="grid" id="choices"></div>
-        <button class="back-btn" onclick="goHome()">戻る</button>
-    </div>
-</div>
+    <script>
+        let kanjiData = [];
+        let yojiData = [];
+        let currentQuestions = [];
+        let qIndex = 0, ok = 0, ng = 0;
+        let isDataLoaded = false;
+        let audioCtx = null;
 
-<script>
-    // サウンド生成（ブラウザ標準）
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(type) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        if(type === 'correct') { osc.frequency.value = 880; gain.gain.value = 0.1; }
-        else { osc.frequency.value = 220; gain.gain.value = 0.1; }
-        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-    }
+        // 4級重要部首データベース
+        const bushuMap = {
+            "画":"ふでづくり","図":"くにがまえ","唱":"くちへん","宵":"うかんむり","照":"れっか・れんが","賞":"かんむり","臣":"しん","信":"にんべん","真":"め","刃":"かたな","仁":"にんべん","陣":"こざとへん","尋":"すん","推":"ふるとり","水":"みず","吹":"くちへん","数":"のぶん・ぼくづくり","世":"じゅう","制":"りっとう","成":"ほこ","政":"のぶん・ぼくづくり","清":"さんずい","晴":"ひへん","静":"あお","生産":"いきる","席":"まだれ","惜":"りっしんべん","積":"のぎへん","籍":"たけかんむり","摂":"てへん","折":"てへん","節":"たけかんむり","説":"ごんべん","雪":"ゆきかんむり","絶":"いとへん","浅":"さんずい","戦":"ほこがまえ","選":"しんにょう","然":"れっか・れんが","争":"けつ","相":"きへん","窓":"あなかんむり","総":"いとへん","草":"くさかんむり","束":"きへん","足":"あし","速":"しんにょう","族":"ほう","他":"にんべん","太":"おおきい","体":"にんべん","対":"すん","耐":"しこう","帯":"はば","待":"ぎょうにんべん","怠":"こころ","態":"こころ","替":"いわく","泰":"みず","滞":"さんずい","逮捕":"てへん","胎":"にくづき","袋":"ころも","貸":"かい","退":"しんにょう","大":"おおきい","代":"にんべん","台":"くち","第":"たけかんむり","題":"おおがい","滝":"さんずい","卓":"たく","択":"てへん","拓":"てへん","沢":"さんずい","達":"しんにょう","脱":"にくづき","谷":"たに","旦":"ひ","短":"まめ","単":"つ","炭":"やま","短":"まめ","男":"ちから","談":"ごんべん","値":"にんべん","知":"や","地":"つちへん","池":"さんずい","置":"あみがしら","遅":"しんにょう","築":"たけかんむり","畜":"うし","竹":"たけ","茶":"くさかんむり","着":"め","中":"ぼう","仲":"にんべん","宙":"うかんむり","忠":"こころ","抽":"てへん","昼":"いたる","柱":"きへん","注":"さんずい","虫":"むし","鋳":"かねへん","著":"くさかんむり","貯":"かいへん","朝":"つき","町":"た","庁":"まだれ","兆":"にじゅうあし","帳":"はば","張":"ゆみへん","頂":"おおがい","鳥":"とり","朝":"つき","調":"ごんべん","爪":"つめ","吊":"くち","釣":"かねへん","鶴":"とり","低":"にんべん","停":"にんべん","定":"うかんむり","底":"まだれ","庭":"まだれ","程":"のぎへん","提":"てへん","締":"いとへん","邸":"おおざと","泥":"さんずい","的":"しろ","滴":"さんずい","適":"しんにょう","敵":"のぶん","鉄":"かねへん","徹":"ぎょうにんべん","撤":"てへん","天":"いち","典":"はち","伝":"にんべん","殿":"るまた","田":"た","電":"あめかんむり","吐":"くちへん","徒":"ぎょうにんべん","途":"しんにょう","都":"おおざと","怒":"おんな","努力":"ちから","度":"まだれ","渡":"さんずい","塗":"つち","島":"やま","東":"きへん","当":"けいがしら","答":"たけかんむり","等":"たけかんむり","筒":"たけかんむり","統":"いとへん","到":"りっとう","逃":"しんにょう","倒":"にんべん","凍":"にすい","唐":"くち","桃":"きへん","透":"しんにょう","悼":"りっしんべん","盗":"さら","陶":"こざとへん","塔":"つちへん","搭":"てへん","棟":"きへん","頭":"おおがい","働":"にんべん","動":"ちから","同":"けいがしら","堂":"つち","童":"たつ","道":"しんにょう","導":"て","特":"うしへん","得":"ぎょうにんべん","徳":"ぎょうにんべん","特":"うしへん","独":"けものへん","読":"ごんべん","突":"あなかんむり","届":"しかばね","屯":"むら","豚":"にくづき"
+        };
+        const bushuList = ["にんべん", "さんずい", "きへん", "ごんべん", "いとへん", "うかんむり", "まだれ", "しんにょう", "くちへん", "てへん", "かねへん", "りっしんべん", "のぎへん", "たけかんむり", "こざとへん", "おおざと"];
 
-    function start(cat) {
-        document.getElementById('start-screen').style.display = 'none';
-        document.getElementById('quiz-area').style.display = 'block';
-        document.getElementById('q-text').innerText = "カテゴリー " + cat + " の問題です";
-        generateChoices();
-    }
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
 
-    function generateChoices() {
-        const c = document.getElementById('choices');
-        c.innerHTML = '';
-        ['選択肢A', '選択肢B', '選択肢C', '選択肢D'].forEach(txt => {
-            const b = document.createElement('button');
-            b.innerText = txt;
-            b.onclick = () => check(txt === '選択肢A');
-            c.appendChild(b);
-        });
-    }
+        function playSfx(freqs) {
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                let now = audioCtx.currentTime;
+                freqs.forEach((f, i) => {
+                    osc.frequency.setValueAtTime(f, now + i * 0.1);
+                });
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start();
+                osc.stop(now + 0.3);
+            } catch(e) { console.log("Audio error suppressed"); }
+        }
 
-    function check(isCorrect) {
-        const f = document.getElementById('feedback');
-        f.style.display = 'block';
-        f.innerText = isCorrect ? "〇" : "×";
-        f.style.color = isCorrect ? "#FF6B6B" : "#4A90E2";
-        playSound(isCorrect ? 'correct' : 'wrong');
-        setTimeout(() => { f.style.display = 'none'; }, 500);
-    }
+        function parseCSV(text) {
+            return text.split(/\r?\n/).slice(1).filter(line => line.trim() !== '').map(line => {
+                return line.split(',').map(cell => cell.trim());
+            }).filter(cells => cells.length >= 2);
+        }
 
-    function goHome() {
-        document.getElementById('start-screen').style.display = 'block';
-        document.getElementById('quiz-area').style.display = 'none';
-    }
-</script>
+        async function loadCSVData() {
+            try {
+                const r1 = await fetch('kanken4kyu_kanji.csv');
+                if(!r1.ok) throw new Error();
+                const t1 = await r1.text();
+                kanjiData = parseCSV(t1);
+
+                const r2 = await fetch('kanken4kyu_yojijukugo.csv');
+                if(!r2.ok) throw new Error();
+                const t2 = await r2.text();
+                yojiData = parseCSV(t2);
+
+                isDataLoaded = true;
+                document.getElementById('loading-status').innerText = "めざせ！20問 全問せいかい！";
+                document.getElementById('loading-status').style.color = "#7f8c8d";
+            } catch (e) {
+                document.getElementById('loading-status').innerText = "⚠️データ読み込みに失敗しました。配置を確認してください。";
+                document.getElementById('loading-status').style.color = "red";
+            }
+        }
+
+        function tryStartQuiz(cat) {
+            initAudio();
+            if (!isDataLoaded) {
+                alert("現在データをよみこんでいます。数秒待ってからもう一度おしてください！");
+                return;
+            }
+            startQuiz(cat);
+        }
+
+        function startQuiz(cat) {
+            ok = 0; ng = 0; qIndex = 0;
+            document.getElementById('start-view').classList.add('hidden');
+            document.getElementById('result-view').style.display = 'none';
+            document.getElementById('quiz-view').style.display = 'flex';
+            
+            generateProblemSet(cat);
+            showQuestion();
+        }
+
+        // 高度なひっかけ選択肢（ダミー選択肢）生成ロジック
+        function makeDummies(correctAnswer, pool, type) {
+            let dummies = [];
+            
+            if (type === 'yoji_string') {
+                // 四字熟語の書き取り用ひっかけ：1〜2文字を変えた偽熟語、または共通の漢字を持つ熟語
+                let cChars = correctAnswer.split('');
+                let sameFirst = pool.filter(w => w !== correctAnswer && w.startsWith(cChars[0])).map(w => w);
+                let sameLast = pool.filter(w => w !== correctAnswer && w.endsWith(cChars[3])).map(w => w);
+                let mixed = [...sameFirst, ...sameLast];
+                
+                mixed.forEach(w => { if(!dummies.includes(w)) dummies.push(w); });
+                
+                // 漢字の部分置換ひっかけ
+                const fakes = ["不", "無", "一", "大", "天", "心", "明", "気"];
+                while(dummies.length < 5) {
+                    let rIdx = Math.floor(Math.random() * 4);
+                    let fChar = fakes[Math.floor(Math.random() * fakes.length)];
+                    let copy = [...cChars];
+                    copy[rIdx] = fChar;
+                    let fakeYoji = copy.join('');
+                    if(fakeYoji !== correctAnswer && !dummies.includes(fakeYoji)) dummies.push(fakeYoji);
+                }
+            } else if (type === 'yoji_read') {
+                // 四字熟語の読み用ひっかけ：送り仮名や響きが似ている他の熟語の読み
+                let match = pool.filter(r => r !== correctAnswer && (r.startsWith(correctAnswer.substring(0,2)) || r.endsWith(correctAnswer.slice(-2))));
+                match.forEach(r => { if(!dummies.includes(r)) dummies.push(r); });
+            } else if (type === 'kanji_read') {
+                // 漢字の読み用ひっかけ：音読みの類似、訓読みの送り仮名違いなど
+                let match = pool.filter(r => r !== correctAnswer && r.substring(0,1) === correctAnswer.substring(0,1));
+                match.forEach(r => { if(!dummies.includes(r)) dummies.push(r); });
+            }
+
+            // 万が一集まらない場合はプールからランダム補填
+            while(dummies.length < 4) {
+                let rnd = pool[Math.floor(Math.random() * pool.length)];
+                if(rnd && rnd !== correctAnswer && !dummies.includes(rnd)) dummies.push(rnd);
+            }
+            
+            return dummies.slice(0, 3);
+        }
+
+        function generateProblemSet(cat) {
+            currentQuestions = [];
+            let isKanji = (cat === 1 || cat === 2 || cat === 6);
+            let source = isKanji ? kanjiData : yojiData;
+            
+            // カテゴリー6専用：bushuMapに載っている漢字だけをベースにシャッフル
+            let shufflePool = [...source];
+            if (cat === 6) {
+                shufflePool = source.filter(x => bushuMap[x[0]]);
+            }
+            // プールが足りない場合のセーフティ
+            if(shufflePool.length === 0) shufflePool = [...source];
+            
+            let shuffle = shufflePool.sort(() => Math.random() - 0.5);
+            let maxQuestions = Math.min(20, shuffle.length);
+
+            for (let i = 0; i < maxQuestions; i++) {
+                let item = shuffle[i];
+                let q = "", a = "", label = "", choices = [];
+
+                if (cat === 1) { // 漢字の読み
+                    q = item[0]; a = item[1] || "しん"; label = "正しい読み方をえらぼう（音読み・訓読み）";
+                    let allReads = source.map(x => x[1]).filter(Boolean);
+                    choices = [a, ...makeDummies(a, allReads, 'kanji_read')];
+                } else if (cat === 2) { // 漢字の書取
+                    q = item[1] || "おんよみ"; a = item[0]; label = "読み方に合う正しい漢字をえらぼう";
+                    let allChars = source.map(x => x[0]).filter(Boolean);
+                    choices = [a, ...makeDummies(a, allChars, 'kanji_string')];
+                } else if (cat === 3) { // 四字熟語の読み
+                    q = item[0]; a = item[1] || "よみがな"; label = "この四字熟語の正しい読み方は？";
+                    let allYojiReads = source.map(x => x[1]).filter(Boolean);
+                    choices = [a, ...makeDummies(a, allYojiReads, 'yoji_read')];
+                } else if (cat === 4) { // 四字熟語の書取
+                    q = item[2] ? item[2].substring(0, 45) : "意味説明"; a = item[0]; label = "この意味にあてはまる四字熟語はどれ？";
+                    let allYojiWords = source.map(x => x[0]).filter(Boolean);
+                    choices = [a, ...makeDummies(a, allYojiWords, 'yoji_string')];
+                } else if (cat === 5) { // 対義語・類義語
+                    q = item[2] ? "意味: 「" + item[2].substring(0, 25) + "」に近い、または対になる熟語は？" : "意味にあう熟語"; a = item[0]; label = "対義語・類義語トレーニング";
+                    let allYojiWords = source.map(x => x[0]).filter(Boolean);
+                    choices = [a, ...makeDummies(a, allYojiWords, 'yoji_string')];
+                } else { // 部首・部首名（※完全修正）
+                    q = item[0]; 
+                    a = bushuMap[item[0]] || "かんむり"; 
+                    label = `漢字「 ${q} 」の正しい部首（ぶしゅ）の名前は？`;
+                    
+                    // 他の部首名からダミーを3つ選定
+                    let otherBushu = bushuList.filter(b => b !== a).sort(() => Math.random() - 0.5);
+                    choices = [a, otherBushu[0], otherBushu[1], otherBushu[2]];
+                }
+
+                // シャッフルして4択化
+                choices = choices.sort(() => Math.random() - 0.5);
+                currentQuestions.push({ q, a, label, c: choices });
+            }
+        }
+
+        function showQuestion() {
+            const data = currentQuestions[qIndex];
+            document.getElementById('progress').innerText = `${qIndex + 1} / 20`;
+            document.getElementById('q-category-label').innerText = data.label;
+            document.getElementById('q-text').innerText = data.q;
+            document.getElementById('count-ok').innerText = ok;
+            document.getElementById('count-ng').innerText = ng;
+
+            const area = document.getElementById('choices-area');
+            area.innerHTML = '';
+            
+            data.c.forEach(txt => {
+                const b = document.createElement('button');
+                b.className = 'choice-btn';
+                b.innerText = txt;
+                b.onclick = () => checkAnswer(txt, data.a);
+                area.appendChild(b);
+            });
+        }
+
+        function checkAnswer(select, correct) {
+            const isCorrect = (select === correct);
+            const el = document.getElementById('effect-layer');
+            
+            el.style.display = 'block';
+            el.innerText = isCorrect ? "〇" : "×";
+            el.style.color = isCorrect ? "var(--correct)" : "var(--wrong)";
+            el.className = '';
+            void el.offsetWidth; 
+            el.className = 'ani-pop';
+            
+            if(isCorrect) {
+                ok++; 
+                playSfx([523.25, 659.25, 783.99, 1046.50]); 
+            } else {
+                ng++; 
+                playSfx([293.66, 277.18, 261.63]); 
+            }
+
+            setTimeout(() => {
+                el.style.display = 'none';
+                qIndex++;
+                if(qIndex < currentQuestions.length) {
+                    showQuestion();
+                } else {
+                    showResult();
+                }
+            }, 700);
+        }
+
+        function showResult() {
+            document.getElementById('quiz-view').style.display = 'none';
+            document.getElementById('result-view').style.display = 'flex';
+            document.getElementById('final-score').innerText = ok;
+
+            let comment = "つぎは全問せいかいをめざそう！";
+            if(ok === 20) comment = "すごすぎる！かんぺきな天才だね！💮";
+            else if(ok >= 15) comment = "すばらしい！合格ラインクリアだよ！✨";
+            else if(ok >= 10) comment = "その調子！くり返し練習してみよう！👍";
+            
+            document.getElementById('result-comment').innerText = comment;
+        }
+
+        function backToHome() {
+            document.getElementById('quiz-view').style.display = 'none';
+            document.getElementById('result-view').style.display = 'none';
+            document.getElementById('start-view').classList.remove('hidden');
+            document.getElementById('loading-status').innerText = "めざせ！20問 全問せいかい！";
+        }
+
+        loadCSVData();
+    </script>
 </body>
 </html>
