@@ -3,42 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>漢検4級 学習リスト</title>
+    <title>漢検4級 学習アプリ</title>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; margin: 20px; background-color: #f4f4f9; }
-        h1 { color: #333; }
-        h2 { border-left: 5px solid #0056b3; padding-left: 10px; color: #0056b3; margin-top: 40px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background-color: #fff; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; margin: 20px; background-color: #f8f9fa; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { color: #d32f2f; text-align: center; }
+        h2 { border-left: 5px solid #d32f2f; padding-left: 10px; margin-top: 40px; color: #d32f2f; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #0056b3; color: white; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .container { max-width: 1000px; margin: auto; }
+        th { background-color: #f2f2f2; }
+        tr:nth-child(even) { background-color: #fafafa; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>漢検4級 学習リスト</h1>
 
+<div class="container">
+    <h1>漢検4級 学習リスト</h1>
+
+    <div id="kanji-section">
         <h2>漢字リスト</h2>
-        <table>
-            <thead>
-                <tr><th>漢字</th><th>音読み</th><th>訓読み</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>一</td><td>イチ・イツ</td><td>ひと・ひと（つ）</td></tr>
-                <tr><td>右</td><td>ウ・ユウ</td><td>みぎ</td></tr>
-                </tbody>
-        </table>
-
-        <h2>四字熟語リスト</h2>
-        <table>
-            <thead>
-                <tr><th>四字熟語</th><th>よみがな</th><th>意味説明</th><th>構成タイプ</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>悪衣悪食</td><td>あくいあくしょく</td><td>粗末な衣服と粗末な食事。貧しく不自由な生活のたとえ</td><td>ア（同じような意味の重ね）</td></tr>
-                </tbody>
+        <table id="kanji-table">
+            <thead><tr><th>漢字</th><th>音読み</th><th>訓読み</th></tr></thead>
+            <tbody></tbody>
         </table>
     </div>
+
+    <div id="yoji-section">
+        <h2>四字熟語リスト</h2>
+        <table id="yoji-table">
+            <thead><tr><th>四字熟語</th><th>よみがな</th><th>意味説明</th><th>構成</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // CSVを読み込んでテーブルに挿入する関数
+    async function loadCSV(url, tableId) {
+        const response = await fetch(url);
+        const data = await response.text();
+        const rows = data.split('\n').slice(1); // ヘッダーを除外
+        const tbody = document.querySelector(`#${tableId} tbody`);
+        
+        rows.forEach(row => {
+            if(row.trim() === "") return;
+            const cols = row.split(',');
+            const tr = document.createElement('tr');
+            cols.forEach(col => {
+                const td = document.createElement('td');
+                td.textContent = col.replace(/"/g, ''); // 簡易的なクォート除去
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+    }
+
+    // CSVファイルの読み込み実行
+    loadCSV('kanken4kyu_kanji.csv', 'kanji-table');
+    loadCSV('kanken4kyu_yojijukugo.csv', 'yoji-table');
+</script>
+
 </body>
 </html>
