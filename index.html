@@ -3,87 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>漢検4級チャレンジ！</title>
+    <title>漢検4級チャレンジ！ - まなびやつばめ</title>
     <style>
-        :root { --main: #FFD93D; --accent: #FF6B6B; --bg: #FFF9E6; }
-        body { font-family: 'Arial Rounded MT Bold', sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { width: 90%; max-width: 500px; background: white; border-radius: 40px; padding: 30px; box-shadow: 0 15px 0 #E5C330; text-align: center; }
-        h1 { color: #555; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        button { padding: 15px; border: none; border-radius: 20px; font-size: 16px; cursor: pointer; transition: transform 0.1s; font-weight: bold; }
-        button:active { transform: scale(0.95); }
-        .cat-btn { background: var(--main); border-bottom: 5px solid #C4A728; }
-        .back-btn { background: #bbb; color: white; margin-top: 20px; }
+        :root { --main: #FFD93D; --bg: #EBF2FF; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { width: 90%; max-width: 500px; background: white; border-radius: 40px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        .logo { width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; border: 4px solid var(--main); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        button { padding: 15px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; background: var(--main); }
+        button:hover { filter: brightness(1.1); }
         #quiz-area { display: none; }
-        .feedback { font-size: 50px; margin: 20px; display: none; }
+        .question { font-size: 24px; font-weight: bold; margin: 20px 0; min-height: 60px; }
+        #feedback { font-size: 60px; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); display: none; }
     </style>
 </head>
 <body>
 
-<div class="card" id="app">
+<div class="card">
     <div id="start-screen">
-        <h1>漢検4級マスター</h1>
+        <a href="https://manabiya-tsubame.com/" target="_blank">
+            <img src="rogo.png" class="logo" alt="ロゴ">
+        </a>
+        <h1>漢検4級チャレンジ</h1>
         <div class="grid">
-            <button class="cat-btn" onclick="start(1)">①漢字の読み</button>
-            <button class="cat-btn" onclick="start(2)">②漢字の書取</button>
-            <button class="cat-btn" onclick="start(3)">③四字熟語読み</button>
-            <button class="cat-btn" onclick="start(4)">④四字熟語書取</button>
-            <button class="cat-btn" onclick="start(5)">⑤対義語・類義語</button>
-            <button class="cat-btn" onclick="start(6)">⑥部首・部首名</button>
+            <button onclick="start(1)">① 漢字の読み</button>
+            <button onclick="start(2)">② 漢字の書取</button>
+            <button onclick="start(3)">③ 四字熟語読み</button>
+            <button onclick="start(4)">④ 四字熟語書取</button>
+            <button onclick="start(5)">⑤ 対義・類義語</button>
+            <button onclick="start(6)">⑥ 部首・部首名</button>
         </div>
     </div>
 
     <div id="quiz-area">
-        <div id="q-text" style="font-size: 24px; margin: 20px 0; min-height: 80px;"></div>
-        <div id="feedback" class="feedback"></div>
+        <div id="q-text" class="question">読み込み中...</div>
         <div class="grid" id="choices"></div>
-        <button class="back-btn" onclick="goHome()">戻る</button>
+        <button style="margin-top:20px; background:#ddd;" onclick="location.reload()">トップに戻る</button>
     </div>
+    <div id="feedback"></div>
 </div>
 
 <script>
-    // サウンド生成（ブラウザ標準）
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(type) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        if(type === 'correct') { osc.frequency.value = 880; gain.gain.value = 0.1; }
-        else { osc.frequency.value = 220; gain.gain.value = 0.1; }
-        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    let db = { kanji: [], yoji: [] };
+
+    // データ読み込みを確実に実行
+    async function loadAll() {
+        try {
+            const kRes = await fetch('kanken4kyu_kanji.csv');
+            const kText = await kRes.text();
+            db.kanji = kText.split('\n').slice(1).filter(l => l.includes(',')).map(l => {
+                const cols = l.split(',');
+                return { q: cols[0], a: cols[1] };
+            });
+
+            const yRes = await fetch('kanken4kyu_yojijukugo.csv');
+            const yText = await yRes.text();
+            db.yoji = yText.split('\n').slice(1).filter(l => l.includes(',')).map(l => {
+                const cols = l.split(',');
+                return { q: cols[0], a: cols[1] };
+            });
+            console.log("読み込み完了");
+        } catch(e) { alert("CSVファイルが見つかりません。"); }
     }
 
     function start(cat) {
+        if(db.kanji.length === 0) { alert("データ準備中..."); return; }
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('quiz-area').style.display = 'block';
-        document.getElementById('q-text').innerText = "カテゴリー " + cat + " の問題です";
-        generateChoices();
+        nextQ();
     }
 
-    function generateChoices() {
+    function nextQ() {
+        const q = db.kanji[Math.floor(Math.random() * db.kanji.length)];
+        document.getElementById('q-text').innerText = q.q + " の読みは？";
         const c = document.getElementById('choices');
         c.innerHTML = '';
-        ['選択肢A', '選択肢B', '選択肢C', '選択肢D'].forEach(txt => {
+        [q.a, 'ひっかけ1', 'ひっかけ2', 'ひっかけ3'].sort(() => Math.random() - 0.5).forEach(txt => {
             const b = document.createElement('button');
             b.innerText = txt;
-            b.onclick = () => check(txt === '選択肢A');
+            b.onclick = () => showFeedback(txt === q.a);
             c.appendChild(b);
         });
     }
 
-    function check(isCorrect) {
+    function showFeedback(isCorrect) {
         const f = document.getElementById('feedback');
-        f.style.display = 'block';
         f.innerText = isCorrect ? "〇" : "×";
         f.style.color = isCorrect ? "#FF6B6B" : "#4A90E2";
-        playSound(isCorrect ? 'correct' : 'wrong');
-        setTimeout(() => { f.style.display = 'none'; }, 500);
+        f.style.display = 'block';
+        setTimeout(() => { f.style.display = 'none'; nextQ(); }, 800);
     }
 
-    function goHome() {
-        document.getElementById('start-screen').style.display = 'block';
-        document.getElementById('quiz-area').style.display = 'none';
-    }
+    loadAll();
 </script>
 </body>
 </html>
