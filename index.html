@@ -3,109 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>漢検4級対策 - まなびやつばめ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
+    <title>漢検4級チャレンジ！</title>
     <style>
-        :root { --bg-color: #EBF2FF; --btn-green: #4fbe79; --btn-purple: #7c5cc4; --navy-dark: #2c3e50; }
-        body { margin: 0; padding: 20px; font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .app-card { width: 100%; max-width: 500px; background: white; border-radius: 30px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
-        
-        /* メニューボタン */
-        .btn-large { width: 100%; padding: 18px; margin: 8px 0; border: none; border-radius: 15px; color: white; font-weight: bold; cursor: pointer; font-size: 18px; }
-        .btn-green { background: var(--btn-green); }
-        .btn-purple { background: var(--btn-purple); }
-        
-        /* クイズ画面用レイアウト */
-        #view-quiz { display: flex; flex-direction: column; gap: 20px; }
-        .status-bar { display: flex; justify-content: space-between; font-weight: bold; color: var(--navy-dark); margin-bottom: 10px; }
-        .question-box { font-size: 28px; font-weight: bold; padding: 40px 10px; background: #f8f9fa; border-radius: 20px; border: 2px dashed #ddd; }
-        
-        /* 4択グリッド */
-        .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .choice-btn { padding: 20px 10px; border: 2px solid #eef2f6; border-radius: 15px; cursor: pointer; background: white; font-size: 18px; font-weight: bold; transition: 0.2s; }
-        .choice-btn:hover { background: #f0f7ff; border-color: #cbd5e0; }
-        
-        .hidden { display: none !important; }
+        :root { --main: #FFD93D; --accent: #FF6B6B; --bg: #FFF9E6; }
+        body { font-family: 'Arial Rounded MT Bold', sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { width: 90%; max-width: 500px; background: white; border-radius: 40px; padding: 30px; box-shadow: 0 15px 0 #E5C330; text-align: center; }
+        h1 { color: #555; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        button { padding: 15px; border: none; border-radius: 20px; font-size: 16px; cursor: pointer; transition: transform 0.1s; font-weight: bold; }
+        button:active { transform: scale(0.95); }
+        .cat-btn { background: var(--main); border-bottom: 5px solid #C4A728; }
+        .back-btn { background: #bbb; color: white; margin-top: 20px; }
+        #quiz-area { display: none; }
+        .feedback { font-size: 50px; margin: 20px; display: none; }
     </style>
 </head>
 <body>
 
-<div class="app-card" id="app">
-    <div id="view-start">
-        <h1 style="font-family: 'M PLUS Rounded 1c';">漢検4級対策</h1>
-        <button class="btn-large btn-green" onclick="startQuiz('kanji_read')">① 漢字の読み</button>
-        <button class="btn-large btn-purple" onclick="startQuiz('kanji_write')">② 漢字の書取</button>
-        <button class="btn-large btn-green" onclick="startQuiz('yoji_read')">③ 四字熟語の読み</button>
-        <button class="btn-large btn-purple" onclick="startQuiz('yoji_write')">④ 四字熟語の書取</button>
+<div class="card" id="app">
+    <div id="start-screen">
+        <h1>漢検4級マスター</h1>
+        <div class="grid">
+            <button class="cat-btn" onclick="start(1)">①漢字の読み</button>
+            <button class="cat-btn" onclick="start(2)">②漢字の書取</button>
+            <button class="cat-btn" onclick="start(3)">③四字熟語読み</button>
+            <button class="cat-btn" onclick="start(4)">④四字熟語書取</button>
+            <button class="cat-btn" onclick="start(5)">⑤対義語・類義語</button>
+            <button class="cat-btn" onclick="start(6)">⑥部首・部首名</button>
+        </div>
     </div>
 
-    <div id="view-quiz" class="hidden">
-        <div class="status-bar">
-            <span id="progress">1 / 20</span>
-            <span>正解: <span id="score">0</span></span>
-        </div>
-        <div class="question-box" id="question-text">読み込み中...</div>
-        <div class="choices-grid" id="choices"></div>
+    <div id="quiz-area">
+        <div id="q-text" style="font-size: 24px; margin: 20px 0; min-height: 80px;"></div>
+        <div id="feedback" class="feedback"></div>
+        <div class="grid" id="choices"></div>
+        <button class="back-btn" onclick="goHome()">戻る</button>
     </div>
 </div>
 
 <script>
-    let db = { kanji: [], yoji: [] };
-    let currentPool = [];
-    let qIdx = 0, score = 0;
-
-    async function loadData() {
-        const kRes = await fetch('kanken4kyu_kanji.csv');
-        db.kanji = (await kRes.text()).split('\n').slice(1).filter(l=>l).map(l => {
-            const [q, a, _] = l.split(',');
-            return { q: q + " の読みは？", a: a };
-        });
-        const yRes = await fetch('kanken4kyu_yojijukugo.csv');
-        db.yoji = (await yRes.text()).split('\n').slice(1).filter(l=>l).map(l => {
-            const [q, r, m, t] = l.split(',');
-            return { q: q + " の読みは？", a: r };
-        });
+    // サウンド生成（ブラウザ標準）
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        if(type === 'correct') { osc.frequency.value = 880; gain.gain.value = 0.1; }
+        else { osc.frequency.value = 220; gain.gain.value = 0.1; }
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
     }
 
-    function startQuiz(type) {
-        let allItems = type.includes('kanji') ? db.kanji : db.yoji;
-        currentPool = allItems.sort(() => Math.random() - 0.5).slice(0, 20);
-        qIdx = 0; score = 0;
-        document.getElementById('view-start').classList.add('hidden');
-        document.getElementById('view-quiz').classList.remove('hidden');
-        showQuestion();
+    function start(cat) {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('quiz-area').style.display = 'block';
+        document.getElementById('q-text').innerText = "カテゴリー " + cat + " の問題です";
+        generateChoices();
     }
 
-    function showQuestion() {
-        const q = currentPool[qIdx];
-        document.getElementById('question-text').innerText = q.q;
-        document.getElementById('progress').innerText = `${qIdx + 1} / 20`;
-        const container = document.getElementById('choices');
-        container.innerHTML = '';
-        
-        // 4択生成（正解 + 他のデータからランダムな3つ）
-        let choices = [q.a];
-        while(choices.length < 4) {
-            let rnd = currentPool[Math.floor(Math.random() * currentPool.length)].a;
-            if(!choices.includes(rnd)) choices.push(rnd);
-        }
-        choices.sort(() => Math.random() - 0.5);
-
-        choices.forEach(text => {
-            const btn = document.createElement('button');
-            btn.className = 'choice-btn';
-            btn.innerText = text;
-            btn.onclick = () => {
-                if(text === q.a) score++;
-                qIdx++;
-                if(qIdx < 20) showQuestion();
-                else alert('終了！スコア: ' + score + '/20');
-            };
-            container.appendChild(btn);
+    function generateChoices() {
+        const c = document.getElementById('choices');
+        c.innerHTML = '';
+        ['選択肢A', '選択肢B', '選択肢C', '選択肢D'].forEach(txt => {
+            const b = document.createElement('button');
+            b.innerText = txt;
+            b.onclick = () => check(txt === '選択肢A');
+            c.appendChild(b);
         });
     }
 
-    loadData();
+    function check(isCorrect) {
+        const f = document.getElementById('feedback');
+        f.style.display = 'block';
+        f.innerText = isCorrect ? "〇" : "×";
+        f.style.color = isCorrect ? "#FF6B6B" : "#4A90E2";
+        playSound(isCorrect ? 'correct' : 'wrong');
+        setTimeout(() => { f.style.display = 'none'; }, 500);
+    }
+
+    function goHome() {
+        document.getElementById('start-screen').style.display = 'block';
+        document.getElementById('quiz-area').style.display = 'none';
+    }
 </script>
 </body>
 </html>
