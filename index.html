@@ -4,9 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>漢検4級チャレンジ！ - まなびやつばめ</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #eaf4ff;
@@ -35,7 +32,7 @@
     html, body {
       margin: 0;
       min-height: 100%;
-      font-family: "Noto Sans JP", sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
       color: var(--navy);
       background:
         radial-gradient(circle at 16% 12%, rgba(255, 217, 61, 0.55), transparent 25%),
@@ -120,7 +117,7 @@
     h1 {
       margin: 8px 0 4px;
       text-align: center;
-      font-family: "M PLUS Rounded 1c", sans-serif;
+      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
       font-size: clamp(24px, 6vw, 30px);
       line-height: 1.15;
       letter-spacing: 0.02em;
@@ -158,7 +155,7 @@
       border-radius: 18px;
       padding: 15px 8px;
       min-height: 58px;
-      font-family: "M PLUS Rounded 1c", sans-serif;
+      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
       font-weight: 900;
       font-size: 14px;
       line-height: 1.25;
@@ -215,7 +212,7 @@
     }
 
     .status-center {
-      font-family: "M PLUS Rounded 1c", sans-serif;
+      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
       font-size: 17px;
       color: var(--navy);
     }
@@ -338,7 +335,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: "M PLUS Rounded 1c", sans-serif;
+      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
       font-size: 46px;
       font-weight: 900;
       color: #6a5700;
@@ -347,7 +344,7 @@
     }
 
     .result-comment {
-      font-family: "M PLUS Rounded 1c", sans-serif;
+      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
       font-size: 19px;
       font-weight: 900;
       color: var(--purple);
@@ -371,7 +368,7 @@
       z-index: 5;
       pointer-events: none;
       opacity: 0;
-      font-family: "M PLUS Rounded 1c", sans-serif;
+      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
       font-size: 150px;
       font-weight: 900;
       line-height: 1;
@@ -653,6 +650,84 @@
     }
 
     async function loadCSVData() {
+      const useFallbackData = (reason) => {
+        console.warn("CSVを読み込めなかったため、内蔵データで起動します。", reason);
+
+        const fallbackKanji = [
+          ["愛", "あい"], ["案", "あん"], ["以", "い"], ["衣", "ころも"], ["位", "い"],
+          ["囲", "かこむ"], ["胃", "い"], ["印", "しるし"], ["英", "えい"], ["栄", "さかえる"],
+          ["塩", "しお"], ["億", "おく"], ["加", "くわえる"], ["果", "はたす"], ["貨", "か"],
+          ["課", "か"], ["芽", "め"], ["改", "あらためる"], ["械", "かい"], ["害", "がい"],
+          ["街", "まち"], ["各", "おのおの"], ["覚", "おぼえる"], ["完", "かん"], ["官", "かん"],
+          ["管", "くだ"], ["関", "せき"], ["観", "みる"], ["願", "ねがう"], ["希", "き"],
+          ["季", "き"], ["紀", "き"], ["喜", "よろこぶ"], ["旗", "はた"], ["器", "うつわ"],
+          ["機", "き"], ["議", "ぎ"], ["求", "もとめる"], ["泣", "なく"], ["救", "すくう"],
+          ["給", "きゅう"], ["挙", "あげる"], ["漁", "りょう"], ["共", "とも"], ["協", "きょう"],
+          ["鏡", "かがみ"], ["競", "きそう"], ["極", "きわめる"], ["訓", "くん"], ["軍", "ぐん"],
+          ["郡", "ぐん"], ["径", "けい"], ["型", "かた"], ["景", "けい"], ["芸", "げい"],
+          ["欠", "かける"], ["結", "むすぶ"], ["建", "たてる"], ["健", "けん"], ["験", "けん"],
+          ["固", "かたい"], ["功", "こう"], ["好", "このむ"], ["候", "こう"], ["航", "こう"],
+          ["康", "こう"], ["告", "つげる"], ["差", "さ"], ["菜", "な"], ["最", "もっとも"],
+          ["材", "ざい"], ["昨", "さく"], ["札", "ふだ"], ["刷", "する"], ["察", "さつ"],
+          ["参", "まいる"], ["産", "さん"], ["散", "ちる"], ["残", "のこる"], ["士", "し"],
+          ["氏", "し"], ["史", "し"], ["司", "し"], ["試", "こころみる"], ["児", "じ"],
+          ["治", "おさめる"], ["辞", "じ"], ["失", "うしなう"], ["借", "かりる"], ["種", "たね"],
+          ["周", "まわり"], ["祝", "いわう"], ["順", "じゅん"], ["初", "はじめ"], ["松", "まつ"],
+          ["笑", "わらう"], ["唱", "となえる"], ["焼", "やく"], ["照", "てる"], ["賞", "しょう"],
+          ["臣", "しん"], ["信", "しん"], ["成", "なる"], ["省", "かえりみる"], ["清", "きよい"],
+          ["静", "しずか"], ["席", "せき"], ["積", "つむ"], ["折", "おる"], ["節", "ふし"],
+          ["説", "とく"], ["浅", "あさい"], ["戦", "たたかう"], ["選", "えらぶ"], ["然", "ぜん"],
+          ["争", "あらそう"], ["倉", "くら"], ["巣", "す"], ["束", "たば"], ["側", "がわ"],
+          ["続", "つづく"], ["卒", "そつ"], ["孫", "まご"], ["帯", "おび"], ["隊", "たい"],
+          ["達", "たつ"], ["単", "たん"], ["置", "おく"], ["仲", "なか"], ["貯", "たくわえる"]
+        ];
+
+        const fallbackYoji = [
+          ["悪戦苦闘", "あくせんくとう", "困難な状況で苦しみながら努力すること"],
+          ["暗中模索", "あんちゅうもさく", "手がかりがないまま、いろいろ試すこと"],
+          ["一石二鳥", "いっせきにちょう", "一つの行動で二つの利益を得ること"],
+          ["一生懸命", "いっしょうけんめい", "力いっぱい物事に取り組むこと"],
+          ["一進一退", "いっしんいったい", "良くなったり悪くなったりすること"],
+          ["一朝一夕", "いっちょういっせき", "わずかな期間のこと"],
+          ["意味深長", "いみしんちょう", "言葉や行動に深い意味があること"],
+          ["右往左往", "うおうさおう", "あわてて、あちこち動き回ること"],
+          ["温故知新", "おんこちしん", "昔のことを学び、新しい知識を得ること"],
+          ["花鳥風月", "かちょうふうげつ", "自然の美しい景色のこと"],
+          ["危機一髪", "ききいっぱつ", "少しの差で危険が迫っていること"],
+          ["起承転結", "きしょうてんけつ", "文章や話の組み立ての流れ"],
+          ["喜怒哀楽", "きどあいらく", "人間のいろいろな感情のこと"],
+          ["急転直下", "きゅうてんちょっか", "物事が急に解決へ向かうこと"],
+          ["興味津々", "きょうみしんしん", "とても興味がある様子"],
+          ["公平無私", "こうへいむし", "自分の利益を考えず公平なこと"],
+          ["五里霧中", "ごりむちゅう", "どうしてよいかわからない状態"],
+          ["試行錯誤", "しこうさくご", "何度も試しながらよい方法を探すこと"],
+          ["自業自得", "じごうじとく", "自分の行いの結果を自分で受けること"],
+          ["七転八起", "しちてんはっき", "何度失敗しても立ち上がること"],
+          ["十人十色", "じゅうにんといろ", "人それぞれ考え方や好みが違うこと"],
+          ["取捨選択", "しゅしゃせんたく", "必要なものを選び、不要なものを捨てること"],
+          ["正々堂々", "せいせいどうどう", "正しく立派な態度で行うこと"],
+          ["千差万別", "せんさばんべつ", "ものごとに多くの違いがあること"],
+          ["前代未聞", "ぜんだいみもん", "今まで聞いたことがないほど珍しいこと"],
+          ["大器晩成", "たいきばんせい", "大人物は時間をかけて成長すること"],
+          ["単刀直入", "たんとうちょくにゅう", "遠回しにせず、すぐ本題に入ること"],
+          ["適材適所", "てきざいてきしょ", "その人に合った場所や役割につけること"],
+          ["天真爛漫", "てんしんらんまん", "飾らず、明るく自然な様子"],
+          ["日進月歩", "にっしんげっぽ", "日ごと月ごとに進歩すること"],
+          ["半信半疑", "はんしんはんぎ", "半分信じて、半分疑っていること"],
+          ["百発百中", "ひゃっぱつひゃくちゅう", "ねらったものが必ず当たること"],
+          ["不言実行", "ふげんじっこう", "文句を言わず、黙って実行すること"],
+          ["無我夢中", "むがむちゅう", "我を忘れるほど熱中すること"],
+          ["油断大敵", "ゆだんたいてき", "油断は大きな失敗につながること"],
+          ["臨機応変", "りんきおうへん", "その場に合わせて対応すること"]
+        ];
+
+        state.kanji = fallbackKanji.map(r => ({ raw: r }));
+        state.yoji = fallbackYoji.map(r => ({ raw: r }));
+        state.loaded = true;
+        el.loadingStatus.textContent = `内蔵データで起動中：漢字 ${state.kanji.length}件／四字熟語 ${state.yoji.length}件`;
+        el.loadingStatus.classList.remove("loading-error");
+      };
+
       try {
         const [kanjiRes, yojiRes] = await Promise.all([
           fetch("kanken4kyu_kanji.csv", { cache: "no-store" }),
@@ -674,10 +749,7 @@
         el.loadingStatus.textContent = `データOK：漢字 ${state.kanji.length}件／四字熟語 ${state.yoji.length}件`;
         el.loadingStatus.classList.remove("loading-error");
       } catch (error) {
-        state.loaded = false;
-        el.loadingStatus.textContent = "データ読み込みに失敗しました。CSV名と同じフォルダ配置を確認してください。";
-        el.loadingStatus.classList.add("loading-error");
-        console.error(error);
+        useFallbackData(error);
       }
     }
 
@@ -1006,4 +1078,74 @@
     }
 
     function showEffect(isCorrect) {
-      el.effectLayer.textContent = 
+      el.effectLayer.textContent = isCorrect ? "〇" : "×";
+      el.effectLayer.style.color = isCorrect ? "var(--red)" : "var(--blue-dark)";
+      el.effectLayer.className = "effect-layer";
+      void el.effectLayer.offsetWidth;
+      el.effectLayer.classList.add("pop");
+    }
+
+    function checkAnswer(selected) {
+      if (state.locked) return;
+      state.locked = true;
+
+      const data = state.questions[state.index];
+      const isCorrect = selected === data.a;
+
+      if (isCorrect) {
+        state.ok++;
+        playCorrect();
+      } else {
+        state.ng++;
+        playWrong();
+      }
+
+      showEffect(isCorrect);
+
+      Array.from(el.choicesArea.children).forEach(btn => {
+        btn.classList.add("locked");
+        if (btn.textContent === data.a) btn.classList.add("correct-choice");
+        if (!isCorrect && btn.textContent === selected) btn.classList.add("wrong-choice");
+      });
+
+      setTimeout(() => {
+        state.index++;
+        if (state.index < TOTAL_QUESTIONS) showQuestion();
+        else showResult();
+      }, 760);
+    }
+
+    function showResult() {
+      setView("result");
+      el.finalScore.textContent = state.ok;
+
+      let comment = "くり返せば、もっと強くなれます！";
+      if (state.ok === 20) comment = "満点！すばらしい集中力です！";
+      else if (state.ok >= 17) comment = "かなり力がついています！";
+      else if (state.ok >= 14) comment = "合格ラインが見えてきました！";
+      else if (state.ok >= 10) comment = "半分以上クリア！ここから伸びます！";
+
+      el.resultComment.textContent = comment;
+      el.resultDetail.textContent = `正解 ${state.ok}問、不正解 ${state.ng}問。まちがえた問題は、次に覚えるチャンスです。`;
+    }
+
+    function backToHome() {
+      state.locked = false;
+      setView("start");
+      if (state.loaded) {
+        el.loadingStatus.textContent = `データOK：漢字 ${state.kanji.length}件／四字熟語 ${state.yoji.length}件`;
+        el.loadingStatus.classList.remove("loading-error");
+      }
+    }
+
+    document.querySelectorAll("[data-cat]").forEach(button => {
+      button.addEventListener("click", () => startQuiz(button.dataset.cat));
+    });
+
+    el.homeBtn.addEventListener("click", backToHome);
+    el.retryBtn.addEventListener("click", backToHome);
+
+    loadCSVData();
+  </script>
+</body>
+</html>
